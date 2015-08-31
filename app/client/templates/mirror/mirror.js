@@ -16,29 +16,35 @@ Template.mirror.helpers({
 
 Template.mirror.onCreated(function () {
   var _this = this;
+
+  // Cross-browser WebRTC
   navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
+  // Create peer
   var peer = new Peer('one-way-mirror', {
     'key': 'g6tlckalty4uc8fr',
   });
 
-  //camStream = null;
-
+  // Start webcam
   navigator.getUserMedia({video: true}, function(stream) {
-    peer.on('connection', function(conn) {
 
+
+    peer.on('connection', function(conn) {
       var camStream = stream;
 
       conn.on('open', function(){
-
         conn.on('data', function(data){
           console.log(data);
+          if( _.has(data,'scroll') ) { 
+            window.scrollTo(0, data.scroll);
+          }
         });
 
-        var callerId = conn.peer;
-        console.log(callerId);
+        // Get client Id
+        var clientId = conn.peer;
         
-        var call = peer.call(callerId, stream);
+        // Call client, send webcam stream
+        var call = peer.call(clientId, stream);
 
       });
     });

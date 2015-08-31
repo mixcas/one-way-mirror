@@ -17,37 +17,44 @@ Template.homepage.helpers({
 
 Template.homepage.onCreated(function () {
   var _this = this;
+
+  // Create peer
   var peer = new Peer({
     'key': 'g6tlckalty4uc8fr',
   });
 
   peer.on('call', function(call) {
-    // Answer the call, providing our mediaStream
+    
+    // Answer the call
     call.answer();
-    console.log('answer');
-    call.on('stream', function(stream) {
-      // `stream` is the MediaStream of the remote peer.
 
+    // On stream add to video as src
+    call.on('stream', function(stream) {
       var video = document.getElementById('mirror-video');
       var url = window.URL || window.webkitURL;
       video.src = url ? url.createObjectURL(stream) : stream;
       video.play();
-
     });
+
   });
   
+  // Connect to server
   var conn = peer.connect('one-way-mirror');
-
-
   conn.on('open', function(id){
 
     conn.on('data', function(data){
-      // Will print 'hi!'
       console.log(data);
-
     });
 
+    var onScrollDebounced = _.debounce(function () {
+      conn.send({ scroll: document.body.scrollTop });
+      console.log(document.body.scrollTop); 
+    }, 400);
+
+    window.addEventListener('scroll', onScrollDebounced, false);
+
   });
+
 
 
 /*
